@@ -213,6 +213,12 @@ class Learner(Configurable):
         log.debug("Created Actor Critic model with architecture:")
         log.debug(self.actor_critic)
         self.actor_critic.model_to_device(self.device)
+        #print('!!!!!!!!!!!!!!!!!!!!!!!! Model parameters:')
+        #num_params = sum(p.numel() for p in self.actor_critic.parameters())
+        #print(f"Total parameters: {num_params}")
+        #for name, param in self.actor_critic.named_parameters():
+        #    if param.requires_grad:
+        #        print(f"{name}: {param.numel()} parameters")
 
         def share_mem(t):
             if t is not None and not t.is_cuda:

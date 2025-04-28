@@ -20,7 +20,7 @@ from sample_factory.envs.env_wrappers import (
 )
 
 from gymnasium.wrappers.transform_reward import TransformReward
-from sf_examples.retro.retro_wrappers import ForwardMovementRewardWrapper
+from sf_examples.retro.retro_wrappers import ForwardMovementRewardWrapper, LogStep
 from sf_examples.retro.retro_discretizer import AirStrikeDiscretizer, KungFuDiscretizer
 
 RETRO_W = RETRO_H = 84
@@ -77,6 +77,7 @@ def make_retro_env(env_name, cfg, env_config, render_mode: Optional[str] = None)
     #env = RewardScalingWrapper(env, 0.01)
     env = TransformReward(env, lambda r: r - 0.02)  # small penalty per timestep
     env = ForwardMovementRewardWrapper(env, LEFT_ACTION_INDEX, RIGHT_ACTION_INDEX, movement_reward=0.1)  # big reward for moving in the correct direction depending on floor
+    #env = LogStep(env)
     env = gym.wrappers.ResizeObservation(env, (RETRO_W, RETRO_H))
     env = gym.wrappers.GrayScaleObservation(env)
     env = gym.wrappers.FrameStack(env, cfg.env_framestack)

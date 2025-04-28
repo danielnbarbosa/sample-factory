@@ -15,7 +15,7 @@ class ActionRewardWrapper(gym.Wrapper):
 
         #print(action, info, reward)
         return obs, reward, terminated, truncated, info
-    
+
 
 class ForwardMovementRewardWrapper(gym.Wrapper):
     def __init__(self, env, left_action: int, right_action: int, movement_reward: float = 0.01):
@@ -34,4 +34,15 @@ class ForwardMovementRewardWrapper(gym.Wrapper):
             reward += self.movement_reward
 
         #print(action, info, reward)
+        return obs, reward, terminated, truncated, info
+
+
+class LogStep(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        print(action, info, reward)
         return obs, reward, terminated, truncated, info
