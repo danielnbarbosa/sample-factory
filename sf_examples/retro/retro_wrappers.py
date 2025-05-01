@@ -49,6 +49,23 @@ class LogStep(gym.Wrapper):
         return obs, reward, terminated, truncated, info
 
 
+class EvalKungFu(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.steps = 0
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        self.steps += 1
+        print(f'Steps: {self.steps}  Floor: {info['floor']}  Lives: {info["lives"]}')
+        if info['dragon'] > 0:
+            print('Finished the game!')
+            self.env.close()
+
+        return obs, reward, terminated, truncated, info
+
+
 class CropObservation(gym.ObservationWrapper):
     def __init__(self, env, top, left, height, width):
         super().__init__(env)
