@@ -17,7 +17,8 @@ class ActionRewardWrapper(gym.Wrapper):
         return obs, reward, terminated, truncated, info
 
 
-class ForwardMovementRewardWrapper(gym.Wrapper):
+class ForwardActiontReward(gym.Wrapper):
+    """Rewards action that moves toward the end of the floor."""
     def __init__(self, env, left_action: int, right_action: int, movement_reward: float = 0.01):
         super().__init__(env)
         self.left_action = left_action
@@ -46,3 +47,25 @@ class LogStep(gym.Wrapper):
 
         print(action, info, reward)
         return obs, reward, terminated, truncated, info
+
+
+class CropObservation(gym.ObservationWrapper):
+    def __init__(self, env, top, left, height, width):
+        super().__init__(env)
+        self.top = top
+        self.left = left
+        self.height = height
+        self.width = width
+
+        orig_shape = env.observation_space.shape  # (H, W, C)
+        new_shape = (height, width, orig_shape[2])
+
+        self.observation_space = gym.spaces.Box(
+            low=0,
+            high=255,
+            shape=new_shape,
+            dtype=env.observation_space.dtype
+        )
+
+    def observation(self, obs):
+        return obs[self.top:self.top+self.height, self.left:self.left+self.width, :]
