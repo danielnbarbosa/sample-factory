@@ -21,7 +21,7 @@ from sample_factory.envs.env_wrappers import (
 
 from gymnasium.wrappers.transform_reward import TransformReward
 from sf_examples.retro.retro_wrappers import ForwardActiontReward, LogStep, CropObservation, EvalKungFu
-from sf_examples.retro.retro_discretizer import AirStrikeDiscretizer, KungFuDiscretizer
+from sf_examples.retro.retro_discretizer import AirStrikeDiscretizer, KungFuDiscretizer, DoubleDragonDiscretizer
 
 RETRO_H = 84
 RETRO_W = 84
@@ -42,6 +42,7 @@ class RetroSpec:
 RETRO_ENVS = [
     RetroSpec("Airstriker-Genesis", "Airstriker-Genesis", AirStrikeDiscretizer),
     RetroSpec("KungFu-Nes", "KungFu-Nes", KungFuDiscretizer),
+    RetroSpec("DoubleDragon-Nes", "DoubleDragon-Nes", DoubleDragonDiscretizer),
 ]
 
 

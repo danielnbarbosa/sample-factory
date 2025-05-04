@@ -124,6 +124,26 @@ class KungFuDiscretizer(Discretizer):
             ],
         )
 
+
+class DoubleDragonDiscretizer(Discretizer):
+
+    def __init__(self, env):
+        super().__init__(
+            env=env,
+            combos=[
+                [],
+                ["LEFT"],
+                ["RIGHT"],
+                ["UP"],
+                ["DOWN"],
+                ["A"],
+                ["B"],
+                ["A", "B"],
+#                ["A", "B", "LEFT"],
+#                ["A", "B", "RIGHT"],
+            ],
+        )
+
 def main():
     env = retro.make(
         game="SonicTheHedgehog-Genesis",
