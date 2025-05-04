@@ -70,39 +70,6 @@ class AirStrikeDiscretizer(Discretizer):
         )
 
 
-class KungFuDiscretizerOld(Discretizer):
-
-    def __init__(self, env):
-        super().__init__(
-            env=env,
-            combos=[
-                [],
-                ["LEFT"],
-                ["RIGHT"],
-                ["UP"],
-                ["DOWN"],
-                ["A"],
-                ["B"],
-                ["UP", "A"],
-                ["UP", "B"],
-                ["UP", "LEFT"],
-                ["UP", "RIGHT"],
-                ["UP", "LEFT", "A"],
-                ["UP", "RIGHT", "A"],
-                ["UP", "LEFT", "B"],
-                ["UP", "RIGHT", "B"],
-                ["DOWN", "A"],
-                ["DOWN", "B"],
-                ["DOWN", "LEFT"],
-                ["DOWN", "RIGHT"],
-                ["DOWN", "LEFT", "A"],
-                ["DOWN", "RIGHT", "A"],
-                ["DOWN", "LEFT", "B"],
-                ["DOWN", "RIGHT", "B"],
-            ],
-        )
-
-
 class KungFuDiscretizer(Discretizer):
 
     def __init__(self, env):

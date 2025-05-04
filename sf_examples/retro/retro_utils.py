@@ -73,15 +73,11 @@ def make_retro_env(env_name, cfg, env_config, render_mode: Optional[str] = None)
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=cfg.env_frameskip)
     #env = EpisodicLifeEnv(env)
-    # noinspection PyUnresolvedReferences
-    #if "FIRE" in env.unwrapped.get_action_meanings():
-    #    env = FireResetEnv(env)
     #env = ClipRewardEnv(env)
     #env = RewardScalingWrapper(env, 0.01)
     #env = TransformReward(env, lambda r: r - 0.02)  # small penalty per timestep
     #env = ForwardActiontReward(env, LEFT_ACTION_INDEX, RIGHT_ACTION_INDEX, movement_reward=0.1)  # big reward for moving in the correct direction depending on floor
     #env = LogStep(env)
-    #env = EvalKungFu(env)
     #env = CropObservation(env, top=64, left=0, height=112, width=240)
     env = gym.wrappers.ResizeObservation(env, (RETRO_H, RETRO_W))
     env = gym.wrappers.GrayScaleObservation(env)
