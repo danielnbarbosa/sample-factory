@@ -58,7 +58,7 @@ class EvalKungFu(gym.Wrapper):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         self.steps += 1
-        print(f'Steps: {self.steps}  Floor: {info['floor']}  Lives: {info["lives"]}')
+        print(f'Steps: {self.steps}  Floor: {info["floor"]}  Lives: {info["lives"]}')
         if info['dragon'] > 0:
             print('Finished the game!')
             self.env.close()
