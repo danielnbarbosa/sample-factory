@@ -6,7 +6,7 @@ def retro_override_defaults(_env, parser):
         # set this to false in command line
         summaries_use_frameskip=True,
         use_record_episode_statistics=True,
-        encoder_conv_architecture="convnet_simple",
+        encoder_conv_architecture="convnet_atari",
         obs_scale=255.0,
         gamma=0.99,
         env_frameskip=4,
@@ -18,7 +18,7 @@ def retro_override_defaults(_env, parser):
         train_for_env_steps=10000000000,
         nonlinearity="elu",
         kl_loss_coeff=0.0,
-        use_rnn=True,
+        use_rnn=False,
         adaptive_stddev=True,
         reward_scale=1.,
         with_vtrace=False,
