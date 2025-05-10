@@ -11,8 +11,6 @@ import retro
 
 from sample_factory.envs.env_wrappers import (
     ClipRewardEnv,
-    EpisodicLifeEnv,
-    FireResetEnv,
     MaxAndSkipEnv,
     NoopResetEnv,
     NumpyObsWrapper,
@@ -20,7 +18,7 @@ from sample_factory.envs.env_wrappers import (
 )
 
 from gymnasium.wrappers.transform_reward import TransformReward
-from sf_examples.retro.retro_wrappers import ForwardActiontReward, LogStep, CropObservation, EvalKungFu
+from sf_examples.retro.retro_wrappers import ForwardActiontReward, LogStep, CropObservation, EpisodicLifeEnv , EvalKungFu, EvalDoubleDragon
 from sf_examples.retro.retro_discretizer import AirStrikeDiscretizer, KungFuDiscretizer, DoubleDragonDiscretizer
 
 RETRO_H = 84
@@ -72,13 +70,15 @@ def make_retro_env(env_name, cfg, env_config, render_mode: Optional[str] = None)
     env = gym.wrappers.RecordEpisodeStatistics(env)
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=cfg.env_frameskip)
-    #env = EpisodicLifeEnv(env)
+    env = EpisodicLifeEnv(env)
     #env = ClipRewardEnv(env)
     #env = RewardScalingWrapper(env, 0.01)
     #env = TransformReward(env, lambda r: r - 0.02)  # small penalty per timestep
     #env = ForwardActiontReward(env, LEFT_ACTION_INDEX, RIGHT_ACTION_INDEX, movement_reward=0.1)  # big reward for moving in the correct direction depending on floor
     #env = LogStep(env)
-    #env = CropObservation(env, top=64, left=0, height=112, width=240)
+    #env = EvalDoubleDragon(env)
+    #env = CropObservation(env, top=64, left=0, height=112, width=240)  # KungFu crop
+    #env = CropObservation(env, top=0, left=0, height=190, width=240)  # DoubleDragon crop
     env = gym.wrappers.ResizeObservation(env, (RETRO_H, RETRO_W))
     env = gym.wrappers.GrayScaleObservation(env)
     env = gym.wrappers.FrameStack(env, cfg.env_framestack)

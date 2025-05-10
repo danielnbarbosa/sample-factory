@@ -103,11 +103,11 @@ class DoubleDragonDiscretizer(Discretizer):
                 ["RIGHT"],
                 ["UP"],
                 ["DOWN"],
-                ["A"],
-                ["B"],
-                ["A", "B"],
-#                ["A", "B", "LEFT"],
-#                ["A", "B", "RIGHT"],
+#                ["A"],  # punch
+                ["B"],  # kick
+#                ["A", "B"],
+                ["A", "B", "LEFT"],
+                ["A", "B", "RIGHT"],
             ],
         )
 

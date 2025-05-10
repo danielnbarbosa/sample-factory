@@ -1,4 +1,6 @@
 import gymnasium as gym
+import numpy as np
+from typing import Any, Dict, Tuple, Union
 
 class ActionRewardWrapper(gym.Wrapper):
     def __init__(self, env, target_action: int, target_reward: float = 0.01):
@@ -45,7 +47,8 @@ class LogStep(gym.Wrapper):
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        print(action, info, reward)
+        if abs(reward) > 0:
+            print(action, info, reward)
         return obs, reward, terminated, truncated, info
 
 
@@ -62,6 +65,48 @@ class EvalKungFu(gym.Wrapper):
         if info['dragon'] > 0:
             print('Finished the game!')
             self.env.close()
+
+        return obs, reward, terminated, truncated, info
+
+
+class EvalDoubleDragon(gym.Wrapper):
+
+    def __init__(self, env):
+        super().__init__(env)
+        self.steps = 0
+        self.map_stage_to_score = {
+        '1-1-1' : 0,
+        '1-1-2' : 1,
+        '1-1-3' : 2,
+        '1-1-4' : 3,
+        '1-2-1' : 4,
+        '1-2-2' : 5,
+        '2-1-1' : 6,
+        '2-1-2' : 7,
+        '2-1-3' : 8,
+        '2-1-4' : 9,
+        '3-1-1' : 10,
+        '3-1-2' : 11,
+        '3-1-3' : 12,
+        '3-1-4' : 13,
+        '3-1-5' : 14,
+        }
+        self.evals = []
+        self.n_evals_to_run = 10
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        self.steps += 1
+        if info['lives'] == -1:
+            stage = f"{info['mission'] + 1}-{info['part'] + 1}-{info['section_active'] + 1}"
+            score = self.map_stage_to_score[stage]
+            print(stage, score)
+            self.evals.append(score)
+            if len(self.evals) == self.n_evals_to_run:
+                print(self.evals)
+                print('Average Score: ', sum(self.evals) / self.n_evals_to_run)
+                self.env.close()
 
         return obs, reward, terminated, truncated, info
 
@@ -86,3 +131,52 @@ class CropObservation(gym.ObservationWrapper):
 
     def observation(self, obs):
         return obs[self.top:self.top+self.height, self.left:self.left+self.width, :]
+
+
+GymObs = Union[Tuple, Dict[str, Any], np.ndarray, int]
+GymStepReturn = Tuple[GymObs, float, bool, bool, Dict]
+
+class EpisodicLifeEnv(gym.Wrapper):
+    """
+    Make end-of-life == end-of-episode, but only reset on true game over.
+    Done by DeepMind for the DQN and co. since it helps value estimation.
+    :param env: the environment to wrap
+
+    Modified from sample-factory version to work with stable-retro games.
+    Assumes info dicts has 'lives' key.
+    """
+
+    def __init__(self, env: gym.Env):
+        gym.Wrapper.__init__(self, env)
+        self.lives = 0
+        self.was_real_done = True
+
+    def step(self, action: int) -> GymStepReturn:
+        obs, reward, terminated, truncated, info = self.env.step(action)
+        self.was_real_done = terminated | truncated
+        # check current lives, make loss of life terminal,
+        # then update lives to handle bonus lives
+        lives = info["lives"]
+        if 0 < lives < self.lives:
+            # for Qbert sometimes we stay in lives == 0 condtion for a few frames
+            # so its important to keep lives > 0, so that we only reset once
+            # the environment advertises done.
+            terminated = True
+        self.lives = lives
+        return obs, reward, terminated, truncated, info
+
+    def reset(self, **kwargs) -> Tuple[np.ndarray, Dict]:
+        """
+        Calls the Gym environment reset, only when lives are exhausted.
+        This way all states are still reachable even though lives are episodic,
+        and the learner need not know about any of this behind-the-scenes.
+        :param kwargs: Extra keywords passed to env.reset() call
+        :return: the first observation of the environment
+        """
+        if self.was_real_done:
+            obs, info = self.env.reset(**kwargs)
+        else:
+            # no-op step to advance from terminal/lost life state
+            obs, _, terminated, truncated, info = self.env.step(0)
+        self.lives = info["lives"]
+        return obs, info
