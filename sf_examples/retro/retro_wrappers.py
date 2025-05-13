@@ -47,8 +47,11 @@ class LogStep(gym.Wrapper):
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        if abs(reward) > 0:
+        keys_to_watch = ['x_pos', 'y_pos', 'y_dst_from_enemy', 'y_status', 'screen']
+        #info_sub = {key: info[key] for key in keys_to_watch if key in info}
+        if abs(reward) >= 0:
             print(action, info, reward)
+
         return obs, reward, terminated, truncated, info
 
 
@@ -56,15 +59,23 @@ class EvalKungFu(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
         self.steps = 0
+        self.evals = []
+        self.n_evals_to_run = 5
 
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         self.steps += 1
-        print(f'Steps: {self.steps}  Floor: {info["floor"]}  Lives: {info["lives"]}')
-        if info['dragon'] > 0:
-            print('Finished the game!')
-            self.env.close()
+        if info['lives'] == 0:
+            dragon = info['dragon']
+            floor = info['floor']
+            score = dragon * 5 + floor
+            print(f"{dragon}-{floor}", score)
+            self.evals.append(score)
+            if len(self.evals) == self.n_evals_to_run:
+                print(self.evals)
+                print(min(self.evals), sum(self.evals) / self.n_evals_to_run, max(self.evals))
+                self.env.close()
 
         return obs, reward, terminated, truncated, info
 
@@ -79,6 +90,7 @@ class EvalDoubleDragon(gym.Wrapper):
         '1-1-2' : 1,
         '1-1-3' : 2,
         '1-1-4' : 3,
+        '1-1-5' : 3.5,
         '1-2-1' : 4,
         '1-2-2' : 5,
         '2-1-1' : 6,
@@ -92,20 +104,20 @@ class EvalDoubleDragon(gym.Wrapper):
         '3-1-5' : 14,
         }
         self.evals = []
-        self.n_evals_to_run = 10
+        self.n_evals_to_run = 5
 
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         self.steps += 1
         if info['lives'] == -1:
-            stage = f"{info['mission'] + 1}-{info['part'] + 1}-{info['section_active'] + 1}"
+            stage = f"{info['mission'] + 1}-{info['part'] + 1}-{info['section'] + 1}"
             score = self.map_stage_to_score[stage]
             print(stage, score)
             self.evals.append(score)
             if len(self.evals) == self.n_evals_to_run:
                 print(self.evals)
-                print('Average Score: ', sum(self.evals) / self.n_evals_to_run)
+                print(min(self.evals), sum(self.evals) / self.n_evals_to_run, max(self.evals))
                 self.env.close()
 
         return obs, reward, terminated, truncated, info

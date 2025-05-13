@@ -77,6 +77,7 @@ def make_retro_env(env_name, cfg, env_config, render_mode: Optional[str] = None)
     #env = ForwardActiontReward(env, LEFT_ACTION_INDEX, RIGHT_ACTION_INDEX, movement_reward=0.1)  # big reward for moving in the correct direction depending on floor
     #env = LogStep(env)
     #env = EvalDoubleDragon(env)
+    #env = EvalKungFu(env)
     #env = CropObservation(env, top=64, left=0, height=112, width=240)  # KungFu crop
     #env = CropObservation(env, top=0, left=0, height=190, width=240)  # DoubleDragon crop
     env = gym.wrappers.ResizeObservation(env, (RETRO_H, RETRO_W))
