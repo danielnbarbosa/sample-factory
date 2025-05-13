@@ -49,7 +49,7 @@ class LogStep(gym.Wrapper):
 
         keys_to_watch = ['x_pos', 'y_pos', 'y_dst_from_enemy', 'y_status', 'screen']
         #info_sub = {key: info[key] for key in keys_to_watch if key in info}
-        if abs(reward) >= 0:
+        if abs(reward) > 0:
             print(action, info, reward)
 
         return obs, reward, terminated, truncated, info
@@ -69,7 +69,7 @@ class EvalKungFu(gym.Wrapper):
         if info['lives'] == 0:
             dragon = info['dragon']
             floor = info['floor']
-            score = dragon * 5 + floor
+            score = (dragon * 5) + (floor + 1)
             print(f"{dragon}-{floor}", score)
             self.evals.append(score)
             if len(self.evals) == self.n_evals_to_run:
