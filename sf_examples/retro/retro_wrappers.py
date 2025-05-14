@@ -20,7 +20,10 @@ class ActionRewardWrapper(gym.Wrapper):
 
 
 class ForwardActiontReward(gym.Wrapper):
-    """Rewards action that moves toward the end of the floor."""
+    """
+    Rewards action that moves toward the end of the floor.
+    This was used earlier in KungFu but was not as effective as tracking x_pos directly.
+    """
     def __init__(self, env, left_action: int, right_action: int, movement_reward: float = 0.01):
         super().__init__(env)
         self.left_action = left_action
@@ -40,6 +43,28 @@ class ForwardActiontReward(gym.Wrapper):
         return obs, reward, terminated, truncated, info
 
 
+class ClimbReward(gym.Wrapper):
+    """
+    Rewards up action while climbing.
+    Used in DoubleDragon to climb fences and ladders.
+    """
+    def __init__(self, env, target_action: int, target_reward: float = 0.1):
+        super().__init__(env)
+        self.target_action = target_action
+        self.target_reward = target_reward
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        # Apply target_reward if the chosen action matches
+        y_status = info['y_status']
+        if action == self.target_action and y_status == 2:
+            reward += self.target_reward
+
+        #print(action, info, reward)
+        return obs, reward, terminated, truncated, info
+
+
 class LogStep(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
@@ -47,10 +72,11 @@ class LogStep(gym.Wrapper):
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        keys_to_watch = ['x_pos', 'y_pos', 'y_dst_from_enemy', 'y_status', 'screen']
-        #info_sub = {key: info[key] for key in keys_to_watch if key in info}
+        #keys_to_watch = ['x_pos', 'y_pos', 'y_dst_from_enemy', 'y_status', 'screen']
+        keys_to_watch = ['x_pos', 'lives', 'health', 'enemy1_health', 'enemy2_health']
+        info_sub = {key: info[key] for key in keys_to_watch if key in info}
         if abs(reward) > 0:
-            print(action, info, reward)
+            print(action, info_sub, reward)
 
         return obs, reward, terminated, truncated, info
 

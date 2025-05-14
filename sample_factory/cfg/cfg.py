@@ -823,3 +823,9 @@ def add_pbt_args(p: ArgumentParser):
         type=str,
         help='Starting state to pass to retro environment.',
     )
+    p.add_argument(
+        "--mode",
+        default=None,
+        type=str,
+        help='Mode to pass to retro environment.  Valid values are: "eval" or "log".',
+    )
