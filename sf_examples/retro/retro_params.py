@@ -26,7 +26,7 @@ def retro_override_defaults(_env, parser):
         batch_size=1024,
         rollout=64,
         max_grad_norm=4.0,
-        num_epochs=2,
+        num_epochs=1,
         num_batches_per_epoch=2,
         ppo_clip_ratio=0.1,
         value_loss_coeff=0.5,

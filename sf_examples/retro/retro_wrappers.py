@@ -73,7 +73,7 @@ class LogStep(gym.Wrapper):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         #keys_to_watch = ['x_pos', 'y_pos', 'y_dst_from_enemy', 'y_status', 'screen']
-        keys_to_watch = ['x_pos', 'lives', 'health', 'enemy1_health', 'enemy2_health']
+        keys_to_watch = ['x_pos', 'x_pos_player', 'y_pos', 'lives', 'health', 'enemy1_health', 'enemy2_health', 'mission', 'part', 'section', 'screen', 'time']
         info_sub = {key: info[key] for key in keys_to_watch if key in info}
         if abs(reward) > 0:
             print(action, info_sub, reward)
@@ -116,19 +116,38 @@ class EvalDoubleDragon(gym.Wrapper):
         '1-1-2' : 1,
         '1-1-3' : 2,
         '1-1-4' : 3,
-        '1-1-5' : 3.5,
-        '1-2-1' : 4,
-        '1-2-2' : 5,
-        '2-1-1' : 6,
-        '2-1-2' : 7,
-        '2-1-3' : 8,
-        '2-1-4' : 9,
-        '3-1-1' : 10,
-        '3-1-2' : 11,
-        '3-1-3' : 12,
-        '3-1-4' : 13,
-        '3-1-5' : 14,
+        '1-1-5' : 4,
+        '1-2-1' : 5,
+        '1-2-2' : 6,
+        '2-1-1' : 7,
+        '2-1-2' : 8,
+        '2-1-3' : 9,
+        '2-1-4' : 10,
+        '3-1-1' : 11,
+        '3-1-2' : 12,
+        '3-1-3' : 13,
+        '3-1-4' : 14,
+        '3-1-5' : 15,
+        '3-1-6' : 16,
+        '3-2-1' : 17,
+        '3-2-2' : 18,
+        '3-2-3' : 19,
+        '3-2-4' : 20,
+        '3-2-5' : 18,  # ropers in incorrect lower path
+        '3-2-6' : 18,  # after ropers
+        '3-2-7' : 18,  # top of incorrect lower path
+        '3-3-1' : 21,
+        '3-3-2' : 22,
+        '3-3-3' : 23,
+        '3-3-4' : 24,
+        '3-3-5' : 25,
+        '3-3-6' : 26,
+        '3-4-1' : 27,
+        '3-4-2' : 28,
+        '4-1-1' : 29,
         }
+
+
         self.evals = []
         self.n_evals_to_run = 5
 
@@ -139,11 +158,11 @@ class EvalDoubleDragon(gym.Wrapper):
         if info['lives'] == -1:
             stage = f"{info['mission'] + 1}-{info['part'] + 1}-{info['section'] + 1}"
             score = self.map_stage_to_score[stage]
-            print(stage, score)
+            print(f"Stage: {stage}    Score: {score}     Steps:{self.steps}")
             self.evals.append(score)
             if len(self.evals) == self.n_evals_to_run:
                 print(self.evals)
-                print(min(self.evals), sum(self.evals) / self.n_evals_to_run, max(self.evals))
+                print(f"{min(self.evals)}    {sum(self.evals) / self.n_evals_to_run}    {max(self.evals)}      {self.steps / self.n_evals_to_run}")
                 self.env.close()
 
         return obs, reward, terminated, truncated, info

@@ -54,10 +54,14 @@ def retro_env_by_name(name):
 def make_retro_env(env_name, cfg, env_config, render_mode: Optional[str] = None):
     retro_spec = retro_env_by_name(env_name)
 
-    if cfg.state is None:
-        env = retro.make(retro_spec.env_id, render_mode=render_mode)
+    #if cfg.state is None:
+    #    env = retro.make(retro_spec.env_id, render_mode=render_mode)
+    #else:
+    if cfg.mode == 'train':
+        env = retro.make(retro_spec.env_id, state=cfg.state, render_mode=render_mode, scenario="scenario")
     else:
-        env = retro.make(retro_spec.env_id, state=cfg.state, render_mode=render_mode)
+        print("Using scenario-eval.json")
+        env = retro.make(retro_spec.env_id, state=cfg.state, render_mode=render_mode, scenario="scenario-eval")
 
     env = retro_spec.discretizer(env)
     #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
@@ -71,13 +75,14 @@ def make_retro_env(env_name, cfg, env_config, render_mode: Optional[str] = None)
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=cfg.env_frameskip)
     if cfg.mode =='train':
+        print("EpisodicLifeEnv() enabled.")
         env = EpisodicLifeEnv(env)
     #env = ClipRewardEnv(env)
     #env = RewardScalingWrapper(env, 0.01)
     #env = TransformReward(env, lambda r: r - 0.02)  # small penalty per timestep
     if env_name == 'DoubleDragon-Nes':
-        env = ClimbReward(env, target_action=3, target_reward=0.05)
-        env = ClimbReward(env, target_action=4, target_reward=-0.05)
+        env = ClimbReward(env, target_action=3, target_reward=0.075)
+        env = ClimbReward(env, target_action=4, target_reward=-0.075)
     if cfg.mode == 'eval':
         env = EvalDoubleDragon(env)
         #env = EvalKungFu(env)

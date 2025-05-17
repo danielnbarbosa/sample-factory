@@ -817,6 +817,10 @@ def add_pbt_args(p: ArgumentParser):
         type=float,
         help="When PBT mutates a float hyperparam, it samples the change magnitude randomly from the uniform distribution [pbt_perturb_min, pbt_perturb_max]",
     )
+
+
+def add_retro_args(p: ArgumentParser):
+    """Arguments to pass to stable-retro."""
     p.add_argument(
         "--state",
         default=None,
