@@ -1,6 +1,7 @@
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, Tuple, Union
+import time
 
 class ActionRewardWrapper(gym.Wrapper):
     def __init__(self, env, target_action: int, target_reward: float = 0.01):
@@ -65,20 +66,61 @@ class ClimbReward(gym.Wrapper):
         return obs, reward, terminated, truncated, info
 
 
-class LogStep(gym.Wrapper):
+class LogKungFu(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
 
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        #keys_to_watch = ['x_pos', 'y_pos', 'y_dst_from_enemy', 'y_status', 'screen']
+        if abs(reward) > 0:
+            print(action, info, reward)
+
+        return obs, reward, terminated, truncated, info
+
+
+class LogDoubleDragon(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
         keys_to_watch = ['x_pos', 'x_pos_player', 'y_pos', 'lives', 'health', 'enemy1_health', 'enemy2_health', 'mission', 'part', 'section', 'screen', 'time']
         info_sub = {key: info[key] for key in keys_to_watch if key in info}
         if abs(reward) > 0:
             print(action, info_sub, reward)
 
         return obs, reward, terminated, truncated, info
+
+
+class LogSuperMarioBros(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.combos={
+                0: "NOOP          ",
+                1: "LEFT          ",
+                2: "RIGHT         ",
+#                "UP",
+#                "DOWN",
+                3: "JUMP          ",
+#                "RUN",
+                4: "RIGHT JUMP    ",
+                5: "RIGHT RUN     ",
+                6: "RIGHT JUMP RUN",
+                7: "LEFT JUMP     ",
+        }
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        if abs(reward) > 0:
+            print(self.combos[action], info, reward)
+        #time.sleep(1)
+
+        return obs, reward, terminated, truncated, info
+
+
 
 
 class EvalKungFu(gym.Wrapper):
@@ -163,6 +205,33 @@ class EvalDoubleDragon(gym.Wrapper):
             if len(self.evals) == self.n_evals_to_run:
                 print(self.evals)
                 print(f"{min(self.evals)}    {sum(self.evals) / self.n_evals_to_run}    {max(self.evals)}      {self.steps / self.n_evals_to_run}")
+                self.env.close()
+
+        return obs, reward, terminated, truncated, info
+
+
+class EvalSuperMarioBros(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.steps = 0
+        self.evals = []
+        self.n_evals_to_run = 10
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        self.steps += 1
+        if info['lives'] == -1:
+            levelHi = info['levelHi']
+            levelLo = info['levelLo']
+            score = (levelHi * 4) + (levelLo)
+            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Steps:{self.steps}")
+            self.evals.append(score)
+            if len(self.evals) == self.n_evals_to_run:
+                print("")
+                print(self.evals)
+                print("min    avg    max    steps")
+                print(f" {min(self.evals)}     {sum(self.evals) / self.n_evals_to_run}     {max(self.evals)}     {self.steps / self.n_evals_to_run}")
                 self.env.close()
 
         return obs, reward, terminated, truncated, info

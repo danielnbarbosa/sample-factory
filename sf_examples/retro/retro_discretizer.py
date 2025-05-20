@@ -111,6 +111,28 @@ class DoubleDragonDiscretizer(Discretizer):
             ],
         )
 
+
+class SuperMarioBrosDiscretizer(Discretizer):
+
+    def __init__(self, env):
+        super().__init__(
+            env=env,
+            combos=[
+                [],
+                ["LEFT"],
+                ["RIGHT"],
+#                ["UP"],
+#                ["DOWN"],
+                ["A"],  # jump
+#                ["B"],  # run, fireball
+                ["RIGHT", "A"],
+                ["RIGHT", "B"],
+                ["RIGHT", "A", "B"],
+                ["LEFT", "A"],
+            ],
+        )
+
+
 def main():
     env = retro.make(
         game="SonicTheHedgehog-Genesis",
