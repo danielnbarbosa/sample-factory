@@ -222,6 +222,7 @@ class EvalSuperMarioBros(gym.Wrapper):
         self.step_count = 0
         self.scores = []
         self.steps = []
+        self.distances = []
         self.n_evals_to_run = 10
         self.cfg = cfg
 
@@ -231,21 +232,23 @@ class EvalSuperMarioBros(gym.Wrapper):
         self.step_count += 1
 
 
-        if info['lives'] == -1:
+        if terminated or truncated:
             levelHi = info['levelHi']
             levelLo = info['levelLo']
             score = (levelHi * 4) + (levelLo)
-            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Steps:{self.step_count}")
+            distance = info['xscrollHi'] * 255 + info['xscrollLo']
+            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Dst: {distance}    Steps:{self.step_count}")
 
             self.scores.append(score)
             self.steps.append(self.step_count)
+            self.distances.append(distance)
             self.step_count = 0
             if len(self.scores) == self.n_evals_to_run:
                 latest_checkpoint = sorted(glob.glob(os.path.join(self.cfg.train_dir, self.cfg.experiment, 'checkpoint_p0', 'checkpoint_*')))[-1]
                 checkpoint_step_count = os.path.basename(latest_checkpoint).split('_')[-1].split('.')[0]
 
-                header = "             min    avg    max    steps               scores"
-                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}M:   {min(self.scores)}     {sum(self.scores) / self.n_evals_to_run}     {max(self.scores)}     {round(sum(self.steps) / self.n_evals_to_run)}    {self.scores}"
+                header = "             min    avg    max     dst                scores"
+                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}M:   {min(self.scores)}     {sum(self.scores) / self.n_evals_to_run}     {max(self.scores)}     {round(sum(self.distances) / self.n_evals_to_run)}    {self.scores}"
                 print("")
                 print(header)
                 print(eval_result)
