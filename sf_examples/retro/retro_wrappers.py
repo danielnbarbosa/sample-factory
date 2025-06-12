@@ -2,6 +2,12 @@ import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, Tuple, Union
 import time
+import os
+import glob
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='eval.log', encoding='utf-8', level=logging.DEBUG, format='%(message)s')
 
 class ActionRewardWrapper(gym.Wrapper):
     def __init__(self, env, target_action: int, target_reward: float = 0.01):
@@ -211,28 +217,39 @@ class EvalDoubleDragon(gym.Wrapper):
 
 
 class EvalSuperMarioBros(gym.Wrapper):
-    def __init__(self, env):
+    def __init__(self, env, cfg):
         super().__init__(env)
-        self.steps = 0
-        self.evals = []
+        self.step_count = 0
+        self.scores = []
+        self.steps = []
         self.n_evals_to_run = 10
+        self.cfg = cfg
 
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        self.steps += 1
+        self.step_count += 1
+
+
         if info['lives'] == -1:
             levelHi = info['levelHi']
             levelLo = info['levelLo']
             score = (levelHi * 4) + (levelLo)
-            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Steps:{self.steps}")
-            self.evals.append(score)
-            if len(self.evals) == self.n_evals_to_run:
+            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Steps:{self.step_count}")
+
+            self.scores.append(score)
+            self.steps.append(self.step_count)
+            self.step_count = 0
+            if len(self.scores) == self.n_evals_to_run:
+                latest_checkpoint = sorted(glob.glob(os.path.join(self.cfg.train_dir, self.cfg.experiment, 'checkpoint_p0', 'checkpoint_*')))[-1]
+                checkpoint_step_count = os.path.basename(latest_checkpoint).split('_')[-1].split('.')[0]
+
+                header = "             min    avg    max    steps               scores"
+                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}M:   {min(self.scores)}     {sum(self.scores) / self.n_evals_to_run}     {max(self.scores)}     {round(sum(self.steps) / self.n_evals_to_run)}    {self.scores}"
                 print("")
-                print(self.evals)
-                print("min    avg    max    steps")
-                print(f" {min(self.evals)}     {sum(self.evals) / self.n_evals_to_run}     {max(self.evals)}     {self.steps / self.n_evals_to_run}")
-                self.env.close()
+                print(header)
+                print(eval_result)
+                logging.info(eval_result)
 
         return obs, reward, terminated, truncated, info
 

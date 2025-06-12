@@ -189,14 +189,14 @@ def make_retro_env_super_mario_bros(env_name, cfg, env_config, render_mode: Opti
     env = gym.wrappers.RecordEpisodeStatistics(env)
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=cfg.env_frameskip)
-    env = ClipRewardEnv(env)
+    #env = ClipRewardEnv(env)
     env = gym.wrappers.ResizeObservation(env, (RETRO_H, RETRO_W))
     env = gym.wrappers.GrayScaleObservation(env)
     env = gym.wrappers.FrameStack(env, cfg.env_framestack)
     env = NumpyObsWrapper(env)
 
     if cfg.mode =='train': env = EpisodicLifeEnv(env); print("EpisodicLifeEnv() enabled.")
-    if cfg.mode == 'eval': env = EvalSuperMarioBros(env)
+    if cfg.mode == 'eval': env = EvalSuperMarioBros(env, cfg)
     if cfg.mode == 'log': env = LogSuperMarioBros(env)
 
     return env
