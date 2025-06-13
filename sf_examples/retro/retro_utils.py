@@ -18,7 +18,7 @@ from sample_factory.envs.env_wrappers import (
 )
 
 from gymnasium.wrappers.transform_reward import TransformReward
-from sf_examples.retro.retro_wrappers import ClimbReward, LogKungFu, LogDoubleDragon, LogSuperMarioBros, CropObservation, EpisodicLifeEnv , EvalKungFu, EvalDoubleDragon, EvalSuperMarioBros
+from sf_examples.retro.retro_wrappers import ClimbReward, LogKungFu, LogDoubleDragon, LogSuperMarioBros, CropObservation, EpisodicLifeEnv, NoopEpisodicLifeEnv, EvalKungFu, EvalDoubleDragon, EvalSuperMarioBros
 from sf_examples.retro.retro_discretizer import AirStrikeDiscretizer, KungFuDiscretizer, DoubleDragonDiscretizer, SuperMarioBrosDiscretizer
 
 RETRO_H = 84
@@ -187,7 +187,7 @@ def make_retro_env_super_mario_bros(env_name, cfg, env_config, render_mode: Opti
         env._max_episode_steps = retro_spec.default_timeout
 
     env = gym.wrappers.RecordEpisodeStatistics(env)
-    env = NoopResetEnv(env, noop_max=30)
+    if cfg.mode =='train': env = NoopEpisodicLifeEnv(env, noop_max=30); print("NoopEpisodicLifeEnv() enabled.")
     env = MaxAndSkipEnv(env, skip=cfg.env_frameskip)
     #env = ClipRewardEnv(env)
     env = gym.wrappers.ResizeObservation(env, (RETRO_H, RETRO_W))
@@ -195,7 +195,6 @@ def make_retro_env_super_mario_bros(env_name, cfg, env_config, render_mode: Opti
     env = gym.wrappers.FrameStack(env, cfg.env_framestack)
     env = NumpyObsWrapper(env)
 
-    if cfg.mode =='train': env = EpisodicLifeEnv(env); print("EpisodicLifeEnv() enabled.")
     if cfg.mode == 'eval': env = EvalSuperMarioBros(env, cfg)
     if cfg.mode == 'log': env = LogSuperMarioBros(env)
 

@@ -326,3 +326,48 @@ class EpisodicLifeEnv(gym.Wrapper):
             obs, _, terminated, truncated, info = self.env.step(0)
         self.lives = info["lives"]
         return obs, info
+
+
+class NoopEpisodicLifeEnv(gym.Wrapper):
+    def __init__(self, env, noop_max=30, noop_action=0):
+        super().__init__(env)
+        self.noop_max = noop_max
+        self.noop_action = noop_action
+        self.lives = 0
+        self.was_real_done = True
+
+        #assert env.unwrapped.get_action_meanings()[noop_action] == 'NOOP'
+
+    def reset(self, **kwargs):
+        """
+        Resets the environment.
+        If the previous episode was a real done (game over), call full reset.
+        If it was a life loss, only apply NOOPs and continue.
+        """
+        if self.was_real_done:
+            obs, info = self.env.reset(**kwargs)
+        else:
+            # Don't call reset() on the underlying env
+            obs, _, terminated, truncated, info = self.env.step(self.noop_action)
+
+        # Apply random number of NOOPs
+        noops = np.random.randint(1, self.noop_max + 1)
+        for _ in range(noops):
+            obs, _, terminated, truncated, info = self.env.step(self.noop_action)
+            if terminated | truncated:
+                obs, info = self.env.reset(**kwargs)
+
+        self.lives = info["lives"]
+        return obs, info
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+        lives = info["lives"]
+        if lives < self.lives and lives >= 0:
+            # Life lost but not game over
+            terminated = True
+            self.was_real_done = False
+        else:
+            self.was_real_done = terminated | truncated
+        self.lives = lives
+        return obs, reward, terminated, truncated, info
