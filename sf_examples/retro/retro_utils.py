@@ -187,7 +187,8 @@ def make_retro_env_super_mario_bros(env_name, cfg, env_config, render_mode: Opti
         env._max_episode_steps = retro_spec.default_timeout
 
     env = gym.wrappers.RecordEpisodeStatistics(env)
-    if cfg.mode =='train': env = NoopEpisodicLifeEnv(env, noop_max=30); print("NoopEpisodicLifeEnv() enabled.")
+    env = NoopResetEnv(env, noop_max=30)
+    #if cfg.mode =='train': env = NoopEpisodicLifeEnv(env, noop_max=30); print("NoopEpisodicLifeEnv() enabled.")
     env = MaxAndSkipEnv(env, skip=cfg.env_frameskip)
     #env = ClipRewardEnv(env)
     env = gym.wrappers.ResizeObservation(env, (RETRO_H, RETRO_W))
