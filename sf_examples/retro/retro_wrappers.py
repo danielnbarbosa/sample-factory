@@ -247,8 +247,8 @@ class EvalSuperMarioBros(gym.Wrapper):
                 latest_checkpoint = sorted(glob.glob(os.path.join(self.cfg.train_dir, self.cfg.experiment, 'checkpoint_p0', 'checkpoint_*')))[-1]
                 checkpoint_step_count = os.path.basename(latest_checkpoint).split('_')[-1].split('.')[0]
 
-                header = "             min    avg    max     dst                scores"
-                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}M:   {min(self.scores)}     {sum(self.scores) / self.n_evals_to_run}     {max(self.scores)}     {round(sum(self.distances) / self.n_evals_to_run)}    {self.scores}"
+                header = "              min    avg     max     dst     steps                 scores"
+                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}M:   {min(self.scores)}     {sum(self.scores) / self.n_evals_to_run}     {max(self.scores)}     {round(sum(self.distances) / self.n_evals_to_run)}    {round(sum(self.steps) / self.n_evals_to_run)}    {self.scores}"
                 print("")
                 print(header)
                 print(eval_result)
