@@ -321,6 +321,8 @@ class EpisodicLifeEnv(gym.Wrapper):
         """
         if self.was_real_done:
             obs, info = self.env.reset(**kwargs)
+            # take one noop action because otherwise info is {}
+            obs, _, terminated, truncated, info = self.env.step(0)
         else:
             # no-op step to advance from terminal/lost life state
             obs, _, terminated, truncated, info = self.env.step(0)
