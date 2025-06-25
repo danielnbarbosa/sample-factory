@@ -223,6 +223,9 @@ class EvalSuperMarioBros(gym.Wrapper):
         self.scores = []
         self.steps = []
         self.distances = []
+        self.steps_dict = {}
+        self.deaths_dict = {}
+        self.lives = 0
         self.n_evals_to_run = 10
         self.cfg = cfg
 
@@ -230,19 +233,34 @@ class EvalSuperMarioBros(gym.Wrapper):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         self.step_count += 1
+        stage = f"{info['levelHi'] + 1}-{info['levelLo'] + 1}"
+        stage_steps = self.steps_dict.get(stage, 0)
+        self.steps_dict[stage] = stage_steps + 1
 
+        if info['lives'] > self.lives:
+            self.lives = info['lives']
+        elif info['lives'] < self.lives:
+            stage_deaths = self.deaths_dict.get(stage, 0)
+            self.deaths_dict[stage] = stage_deaths + 1
+            self.lives = info['lives']
 
         if terminated or truncated:
             levelHi = info['levelHi']
             levelLo = info['levelLo']
             score = (levelHi * 4) + (levelLo)
             distance = info['xscrollHi'] * 255 + info['xscrollLo']
+
             print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Dst: {distance}    Steps:{self.step_count}")
+            print("Steps:  ", self.steps_dict)
+            print("Steps %:", {k:round(v * 100 / self.step_count) for k,v in self.steps_dict.items()})
+            print("Deaths: ", self.deaths_dict)
 
             self.scores.append(score)
             self.steps.append(self.step_count)
             self.distances.append(distance)
             self.step_count = 0
+            self.steps_dict = {}
+            self.deaths_dict = {}
             if len(self.scores) == self.n_evals_to_run:
                 latest_checkpoint = sorted(glob.glob(os.path.join(self.cfg.train_dir, self.cfg.experiment, 'checkpoint_p0', 'checkpoint_*')))[-1]
                 checkpoint_step_count = os.path.basename(latest_checkpoint).split('_')[-1].split('.')[0]
