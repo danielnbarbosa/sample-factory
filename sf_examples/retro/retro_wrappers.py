@@ -219,11 +219,13 @@ class EvalDoubleDragon(gym.Wrapper):
 class EvalSuperMarioBros(gym.Wrapper):
     def __init__(self, env, cfg):
         super().__init__(env)
-        self.step_count = 0
+        self.ep_steps = 0
+        self.ep_reward = 0
         self.scores = []
         self.steps = []
         self.distances = []
         self.deaths = []
+        self.rewards = []
         self.steps_dict = {}
         self.deaths_dict = {}
         self.lives = 0
@@ -233,10 +235,12 @@ class EvalSuperMarioBros(gym.Wrapper):
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        self.step_count += 1
+        self.ep_steps += 1
         stage = f"{info['levelHi'] + 1}-{info['levelLo'] + 1}"
         stage_steps = self.steps_dict.get(stage, 0)
         self.steps_dict[stage] = stage_steps + 1
+
+        self.ep_reward += reward
 
         if info['lives'] > self.lives:
             self.lives = info['lives']
@@ -251,24 +255,32 @@ class EvalSuperMarioBros(gym.Wrapper):
             score = (levelHi * 4) + (levelLo)
             distance = info['xscrollHi'] * 255 + info['xscrollLo']
 
-            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Dst: {distance}    Steps:{self.step_count}    Deaths:{sum(self.deaths_dict.values())}")
+            print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Dst: {distance}    Steps:{self.ep_steps}    Deaths:{sum(self.deaths_dict.values())}")
             print("Steps:  ", self.steps_dict)
-            print("Steps %:", {k:round(v * 100 / self.step_count) for k,v in self.steps_dict.items()})
+            print("Steps %:", {k:round(v * 100 / self.ep_steps) for k,v in self.steps_dict.items()})
             print("Deaths: ", self.deaths_dict)
 
             self.scores.append(score)
-            self.steps.append(self.step_count)
+            self.steps.append(self.ep_steps)
             self.distances.append(distance)
             self.deaths.append(sum(self.deaths_dict.values()))
-            self.step_count = 0
+            self.rewards.append(round(self.ep_reward))
+            self.ep_steps = 0
+            self.ep_reward = 0
             self.steps_dict = {}
             self.deaths_dict = {}
             if len(self.scores) == self.n_evals_to_run:
                 latest_checkpoint = sorted(glob.glob(os.path.join(self.cfg.train_dir, self.cfg.experiment, 'checkpoint_p0', 'checkpoint_*')))[-1]
                 checkpoint_step_count = os.path.basename(latest_checkpoint).split('_')[-1].split('.')[0]
 
-                header = "              min    avg     max     dst     steps                 scores                 deaths"
-                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}M:   {min(self.scores)}     {sum(self.scores) / self.n_evals_to_run}     {max(self.scores)}     {round(sum(self.distances) / self.n_evals_to_run)}    {round(sum(self.steps) / self.n_evals_to_run)}    {self.scores}    {self.deaths}"
+                header = "                scores       rewards       deaths        steps           dsts                         scores                                      rewards                                    deaths                                      steps                                                  dsts"
+                eval_result = f"{self.cfg.experiment.split('_')[-1]}   {round(int(checkpoint_step_count) / 1_000_000)}   "\
+                              f"{min(self.scores)} {sum(self.scores) / self.n_evals_to_run} {max(self.scores)}   "\
+                              f"{min(self.rewards)} {sum(self.rewards) / self.n_evals_to_run} {max(self.rewards)}   "\
+                              f"{min(self.deaths)} {sum(self.deaths) / self.n_evals_to_run} {max(self.deaths)}   "\
+                              f"{min(self.steps)} {sum(self.steps) / self.n_evals_to_run} {max(self.steps)}   "\
+                              f"{min(self.distances)} {sum(self.distances) / self.n_evals_to_run} {max(self.distances)}   "\
+                              f"{self.scores}   {self.rewards}   {self.deaths}   {self.steps}   {self.distances}"
                 print("")
                 print(header)
                 print(eval_result)
