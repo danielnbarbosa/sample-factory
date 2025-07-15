@@ -108,13 +108,13 @@ class LogSuperMarioBros(gym.Wrapper):
                 1: "LEFT          ",
                 2: "RIGHT         ",
 #                "UP",
-#                "DOWN",
-                3: "JUMP          ",
+                3: "DOWN",
+                4: "JUMP          ",
 #                "RUN",
-                4: "RIGHT JUMP    ",
-                5: "RIGHT RUN     ",
-                6: "RIGHT JUMP RUN",
-                7: "LEFT JUMP     ",
+                5: "RIGHT JUMP    ",
+                6: "RIGHT RUN     ",
+                7: "RIGHT JUMP RUN",
+                8: "LEFT JUMP     ",
         }
 
     def step(self, action):

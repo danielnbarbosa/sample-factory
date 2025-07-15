@@ -122,7 +122,7 @@ class SuperMarioBrosDiscretizer(Discretizer):
                 ["LEFT"],
                 ["RIGHT"],
 #                ["UP"],
-#                ["DOWN"],
+                ["DOWN"],
                 ["A"],  # jump
 #                ["B"],  # run, fireball
                 ["RIGHT", "A"],
