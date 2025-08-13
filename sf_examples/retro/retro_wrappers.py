@@ -253,7 +253,7 @@ class EvalSuperMarioBros(gym.Wrapper):
             levelHi = info['levelHi']
             levelLo = info['levelLo']
             score = (levelHi * 4) + (levelLo)
-            distance = info['xscrollHi'] * 255 + info['xscrollLo']
+            distance = info['progress']
 
             print(f"World: {levelHi + 1}-{levelLo + 1}    Score: {score}    Dst: {distance}    Steps:{self.ep_steps}    Deaths:{sum(self.deaths_dict.values())}")
             print("Steps:  ", self.steps_dict)
